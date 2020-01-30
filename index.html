@@ -1,16 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Happy, Sad, Angry</title>
+    </head>
+    <body>
+        <h1>Give me your best {{ page_data.emotion }} face</h1>
+        <video id="video" autoplay></video>
+        <br/>
+        <button id="capture">Capture emotion</button>
+        <h1 id="message"></h1>
 
-     <!DOCTYPE html>
-     <html lang="en">
-     <head>
-       <meta charset="utf-8">
-       <title>ID2116 Team X Project Page</title>
-       <link rel="stylesheet" type="text/css" href="style.css">
-     </head>
-     <body>
-        <h1>YEO JUN PENG</h1>
-        <p>Hi! My name is Jun Peng. I am currently an undergraduate student, majoring in Industrial design, at NUS. I have always been intrigued by the influence of technology and entrepreneurship on our society. I am passionate about design especially in the areas of user interface/user experience and Generative Design. As a designer, I hope to combine the realms of design and technology to make the world a healthier, and more sustainable place.</p>
-        <p>Chloe suck balls</p>
-     </body>
-     
-     </html>
- 
+        <script type="text/javascript">
+            window.addEventListener("DOMContentLoaded", function() {
+                var video = document.getElementById('video');
+
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    const getImage = async () => {
+                        video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true })
+                        video.play();
+                    }
+                    getImage()
+                }
+
+                var message = document.getElementById('message');
+                
+                document
+                .getElementById('capture')
+                .addEventListener('click', () => {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = 640;
+                    canvas.height = 480;
+
+                    var context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    var data = {
+                        'image_base64': canvas.toDataURL("image/png"),
+                        'emotion': '{{ page_data.emotion }}'
+                    }
+                    message.textContent = "Let's see what emotion you're showing..."
+                    const getResult = async () => {
+                        var result = await fetch('result', {
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: { 'Content-Type': 'application/json' }
+                        })
+
+                        var jsonResult = await result.json()
+                        message.textContent = jsonResult.message
+                    }
+                    getResult()
+                });
+            })
+        </script>
+    </body>
+</html>
